@@ -113,25 +113,25 @@ if "started" in st.session_state:
             "Score": [score]
         })
 
-        file_name = "cbt_results.xlsx"
+        file_name = "cbt_results.csv"
 
         if os.path.exists(file_name):
 
-            old_data = pd.read_excel(file_name)
+            old_data = pd.read_csv(file_name)
 
             new_data = pd.concat(
                 [old_data, result],
                 ignore_index=True
             )
 
-            new_data.to_excel(
+            new_data.to_csv(
                 file_name,
                 index=False
             )
 
         else:
 
-            result.to_excel(
+            result.to_csv(
                 file_name,
                 index=False
             )
