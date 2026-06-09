@@ -1,9 +1,12 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-import os
 import gspread
 from google.oauth2.service_account import Credentials
+
+# =========================
+# GOOGLE SHEETS SETUP
+# =========================
 
 scope = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -20,7 +23,7 @@ client = gspread.authorize(creds)
 sheet = client.open("CBT Public Economics Results").sheet1
 
 # =========================
-# IDENTITAS MAHASISWA
+# UI IDENTITAS
 # =========================
 
 st.title("Public Economics CBT")
@@ -34,7 +37,7 @@ class_name = st.selectbox(
 )
 
 # =========================
-# MULAI UJIAN
+# STATE START EXAM
 # =========================
 
 if "started" not in st.session_state:
@@ -44,7 +47,7 @@ if st.button("Start Exam"):
     st.session_state.started = True
 
 # =========================
-# SOAL UJIAN
+# QUESTIONS
 # =========================
 
 if st.session_state.started:
@@ -116,43 +119,15 @@ if st.session_state.started:
         st.success(f"Final Score = {score}")
 
         # =========================
-        # SIMPAN DATA
+        # SAVE TO GOOGLE SHEETS
         # =========================
-
-        result = pd.DataFrame({
-            "Timestamp": [datetime.now()],
-            "NIM": [nim],
-            "Student Name": [name],
-            "Class": [class_name],
-            "Score": [score]
-        })
-
-        file_name = "cbt_results.csv"
-
-        if os.path.exists(file_name):
-
-            old_data = pd.read_csv(file_name)
-
-            new_data = pd.concat([old_data, result], ignore_index=True)
-
-            new_data.to_csv(file_name, index=False)
-
-        else:
-
-            result.to_csv(file_name, index=False)
-
-        # =========================
-        # DOWNLOAD BUTTON (TAMBAHAN)
-        # =========================
-
-        csv = result.to_csv(index=False)
 
         sheet.append_row([
-    str(datetime.now()),
-    nim,
-    name,
-    class_name,
-    score
-])
+            str(datetime.now()),
+            nim,
+            name,
+            class_name,
+            score
+        ])
 
-        st.info("Result saved successfully.")
+        st.info("Result successfully recorded.")
