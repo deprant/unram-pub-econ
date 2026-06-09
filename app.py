@@ -10,21 +10,19 @@ import os
 st.title("Public Economics CBT")
 
 name = st.text_input("Student Name")
-
 nim = st.text_input("NIM")
 
 class_name = st.selectbox(
     "Class",
-    [
-        "Class A",
-        "Class B",
-        "Class C"
-    ]
+    ["Class A", "Class B", "Class C"]
 )
 
 # =========================
 # MULAI UJIAN
 # =========================
+
+if "started" not in st.session_state:
+    st.session_state.started = False
 
 if st.button("Start Exam"):
     st.session_state.started = True
@@ -33,7 +31,7 @@ if st.button("Start Exam"):
 # SOAL UJIAN
 # =========================
 
-if "started" in st.session_state:
+if st.session_state.started:
 
     q1 = st.radio(
         "1. What is a public good?",
@@ -102,7 +100,7 @@ if "started" in st.session_state:
         st.success(f"Final Score = {score}")
 
         # =========================
-        # SIMPAN KE EXCEL
+        # SIMPAN DATA
         # =========================
 
         result = pd.DataFrame({
@@ -119,21 +117,25 @@ if "started" in st.session_state:
 
             old_data = pd.read_csv(file_name)
 
-            new_data = pd.concat(
-                [old_data, result],
-                ignore_index=True
-            )
+            new_data = pd.concat([old_data, result], ignore_index=True)
 
-            new_data.to_csv(
-                file_name,
-                index=False
-            )
+            new_data.to_csv(file_name, index=False)
 
         else:
 
-            result.to_csv(
-                file_name,
-                index=False
-            )
+            result.to_csv(file_name, index=False)
+
+        # =========================
+        # DOWNLOAD BUTTON (TAMBAHAN)
+        # =========================
+
+        csv = result.to_csv(index=False)
+
+        st.download_button(
+            label="Download Your Result",
+            data=csv,
+            file_name=f"result_{nim}.csv",
+            mime="text/csv"
+        )
 
         st.info("Result saved successfully.")
