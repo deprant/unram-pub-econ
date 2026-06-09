@@ -2,6 +2,22 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import os
+import gspread
+from google.oauth2.service_account import Credentials
+
+scope = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
+]
+
+creds = Credentials.from_service_account_file(
+    "credentials.json",
+    scopes=scope
+)
+
+client = gspread.authorize(creds)
+
+sheet = client.open("CBT Public Economics Results").sheet1
 
 # =========================
 # IDENTITAS MAHASISWA
@@ -131,11 +147,12 @@ if st.session_state.started:
 
         csv = result.to_csv(index=False)
 
-        st.download_button(
-            label="Download Your Result",
-            data=csv,
-            file_name=f"result_{nim}.csv",
-            mime="text/csv"
-        )
+        sheet.append_row([
+    str(datetime.now()),
+    nim,
+    name,
+    class_name,
+    score
+])
 
         st.info("Result saved successfully.")
