@@ -5,23 +5,29 @@ from datetime import datetime
 from google.oauth2.service_account import Credentials
 
 # =========================
-# GOOGLE SHEETS SETUP
+# GOOGLE SHEETS SETUP (OPTIMIZED)
 # =========================
 
-scope = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive"
-]
+@st.cache_resource
+def init_gsheets():
+    scope = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive"
+    ]
 
-creds = Credentials.from_service_account_file(
-    "credentials.json",
-    scopes=scope
-)
+    creds = Credentials.from_service_account_file(
+        "credentials.json",
+        scopes=scope
+    )
 
-client = gspread.authorize(creds)
+    client = gspread.authorize(creds)
 
-SPREADSHEET_ID = "1djMtdtozoTyQDOKbgoN0neCF2Cqwn6WCiYvsUM2ALRI"
-sheet = client.open_by_key(SPREADSHEET_ID).sheet1
+    spreadsheet_id = "1djMtdtozoTyQDOKbgoN0neCF2Cqwn6WCiYvsUM2ALRI"
+    sheet = client.open_by_key(spreadsheet_id).sheet1
+
+    return sheet
+
+sheet = init_gsheets()
 
 # =========================
 # UI IDENTITAS
@@ -45,7 +51,10 @@ if "started" not in st.session_state:
     st.session_state.started = False
 
 if st.button("Start Exam"):
-    st.session_state.started = True
+    if not name or not nim:
+        st.warning("Please enter Name and NIM before starting.")
+    else:
+        st.session_state.started = True
 
 # =========================
 # QUESTIONS
@@ -103,32 +112,36 @@ if st.session_state.started:
 
     if st.button("Submit"):
 
+        if not name or not nim:
+            st.error("Identity incomplete.")
+            st.stop()
+
         score = 0
 
         if q1 == "Non-rival and non-excludable":
             score += 25
-
         if q2 == "Finance public expenditure":
             score += 25
-
         if q3 == "Third parties are affected":
             score += 25
-
         if q4 == "Government spending and taxation":
             score += 25
 
         st.success(f"Final Score = {score}")
 
         # =========================
-        # SAVE TO GOOGLE SHEETS
+        # SAVE TO GOOGLE SHEETS (SAFE WRITE)
         # =========================
 
-        sheet.append_row([
-            str(datetime.now()),
-            nim,
-            name,
-            class_name,
-            score
-        ])
-
-        st.info("Result successfully recorded.")
+        try:
+            sheet.append_row([
+                str(datetime.now()),
+                nim,
+                name,
+                class_name,
+                score
+            ])
+            st.info("Result successfully recorded.")
+        except Exception as e:
+            st.error("Failed to write to Google Sheets.")
+            st.exception(e)
