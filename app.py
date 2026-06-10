@@ -8,6 +8,8 @@ from google.oauth2.service_account import Credentials
 # =========================
 # DEBUG FILE CHECK (optional)
 # =========================
+st.write("SERVICE ACCOUNT EMAIL:", creds.service_account_email)
+st.write("TOKEN URI:", creds.token_uri)
 st.write("Credentials file exists:", os.path.exists("credentials.json"))
 
 # =========================
