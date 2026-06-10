@@ -5,32 +5,40 @@ from datetime import datetime
 from google.oauth2.service_account import Credentials
 
 # =========================
-# GOOGLE SHEETS SETUP
+# GOOGLE SHEETS SETUP (ROBUST)
 # =========================
 
 @st.cache_resource
 def init_gsheets():
+
     scope = [
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive"
     ]
 
-    # pastikan file ini ada di repo / Streamlit Cloud
+    # load credentials
     creds = Credentials.from_service_account_file(
         "credentials.json",
         scopes=scope
     )
 
-    # DEBUG aman (tanpa attribute yang berisiko error)
+    # DEBUG ONLY
     st.write("SERVICE ACCOUNT EMAIL:", creds.service_account_email)
     st.write("PROJECT ID:", getattr(creds, "project_id", "N/A"))
-    st.write("Credentials file exists:", os.path.exists("credentials.json"))
+    st.write("CREDENTIAL FILE FOUND:", os.path.exists("credentials.json"))
 
     client = gspread.authorize(creds)
 
     spreadsheet_id = "1djMtdtozoTyQDOKbgoN0neCF2Cqwn6WCiYvsUM2ALRI"
 
-    sheet = client.open_by_key(spreadsheet_id).sheet1
+    # =========================
+    # IMPORTANT FIX: avoid open_by_key issue fallback
+    # =========================
+    try:
+        sheet = client.open_by_key(spreadsheet_id).sheet1
+    except Exception as e:
+        st.error("Google Sheets connection failed at open_by_key stage.")
+        raise e
 
     return sheet
 
@@ -52,7 +60,7 @@ class_name = st.selectbox(
 )
 
 # =========================
-# SESSION STATE
+# STATE
 # =========================
 
 if "started" not in st.session_state:
@@ -60,7 +68,7 @@ if "started" not in st.session_state:
 
 if st.button("Start Exam"):
     if not name or not nim:
-        st.warning("Please fill Name and NIM first.")
+        st.warning("Fill identity first.")
     else:
         st.session_state.started = True
 
@@ -70,59 +78,39 @@ if st.button("Start Exam"):
 
 if st.session_state.started:
 
-    q1 = st.radio(
-        "1. What is a public good?",
-        [
-            "Private good",
-            "Non-rival and non-excludable",
-            "Luxury good",
-            "Inferior good"
-        ],
-        key="q1"
-    )
+    q1 = st.radio("1. Public good?", [
+        "Private good",
+        "Non-rival and non-excludable",
+        "Luxury good",
+        "Inferior good"
+    ], key="q1")
 
-    q2 = st.radio(
-        "2. What is the main objective of taxation?",
-        [
-            "Increase inequality",
-            "Finance public expenditure",
-            "Reduce production",
-            "Eliminate trade"
-        ],
-        key="q2"
-    )
+    q2 = st.radio("2. Taxation objective?", [
+        "Increase inequality",
+        "Finance public expenditure",
+        "Reduce production",
+        "Eliminate trade"
+    ], key="q2")
 
-    q3 = st.radio(
-        "3. Externalities occur when",
-        [
-            "Markets are perfect",
-            "Third parties are affected",
-            "Taxes disappear",
-            "Inflation rises"
-        ],
-        key="q3"
-    )
+    q3 = st.radio("3. Externality occurs when?", [
+        "Markets are perfect",
+        "Third parties are affected",
+        "Taxes disappear",
+        "Inflation rises"
+    ], key="q3")
 
-    q4 = st.radio(
-        "4. What is fiscal policy?",
-        [
-            "Government spending and taxation",
-            "Monetary policy",
-            "Trade policy",
-            "Exchange rate policy"
-        ],
-        key="q4"
-    )
+    q4 = st.radio("4. Fiscal policy?", [
+        "Government spending and taxation",
+        "Monetary policy",
+        "Trade policy",
+        "Exchange rate policy"
+    ], key="q4")
 
     # =========================
     # SUBMIT
     # =========================
 
     if st.button("Submit"):
-
-        if not name or not nim:
-            st.error("Incomplete identity")
-            st.stop()
 
         score = 0
 
@@ -137,10 +125,6 @@ if st.session_state.started:
 
         st.success(f"Final Score = {score}")
 
-        # =========================
-        # SAVE TO GOOGLE SHEETS
-        # =========================
-
         try:
             sheet.append_row([
                 str(datetime.now()),
@@ -149,7 +133,7 @@ if st.session_state.started:
                 class_name,
                 score
             ])
-            st.info("Saved successfully to Google Sheets.")
+            st.info("Saved to Google Sheets.")
         except Exception as e:
-            st.error("Failed to save to Google Sheets")
+            st.error("Write failed")
             st.exception(e)
