@@ -6,13 +6,6 @@ from datetime import datetime
 from google.oauth2.service_account import Credentials
 
 # =========================
-# DEBUG FILE CHECK (optional)
-# =========================
-st.write("SERVICE ACCOUNT EMAIL:", creds.service_account_email)
-st.write("TOKEN URI:", creds.token_uri)
-st.write("Credentials file exists:", os.path.exists("credentials.json"))
-
-# =========================
 # GOOGLE SHEETS SETUP
 # =========================
 
@@ -23,17 +16,20 @@ def init_gsheets():
         "https://www.googleapis.com/auth/drive"
     ]
 
-    # IMPORTANT: ensure filename matches actual uploaded file
     creds = Credentials.from_service_account_file(
         "credentials.json",
         scopes=scope
     )
 
+    # DEBUG (taruh DI DALAM function, bukan di luar)
+    st.write("SERVICE ACCOUNT EMAIL:", creds.service_account_email)
+    st.write("TOKEN URI:", creds.token_uri)
+    st.write("Credentials file exists:", os.path.exists("credentials.json"))
+
     client = gspread.authorize(creds)
 
     spreadsheet_id = "1djMtdtozoTyQDOKbgoN0neCF2Cqwn6WCiYvsUM2ALRI"
 
-    # FIX: use variable, not string literal
     sheet = client.open_by_key(spreadsheet_id).sheet1
 
     return sheet
@@ -124,12 +120,10 @@ if st.session_state.started:
 
     if st.button("Submit"):
 
-        # VALIDATION
         if not name or not nim:
             st.error("Identity incomplete. Please fill Name and NIM.")
             st.stop()
 
-        # SCORING
         score = 0
 
         if q1 == "Non-rival and non-excludable":
@@ -142,10 +136,6 @@ if st.session_state.started:
             score += 25
 
         st.success(f"Final Score = {score}")
-
-        # =========================
-        # SAVE TO GOOGLE SHEETS
-        # =========================
 
         try:
             sheet.append_row([
