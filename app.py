@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import gspread
 from datetime import datetime
+
 from google.oauth2.service_account import Credentials
 
 # =========================
@@ -20,7 +21,8 @@ creds = Credentials.from_service_account_file(
 
 client = gspread.authorize(creds)
 
-sheet = client.open_by_key(SPREADSHEET_ID)
+SPREADSHEET_ID = "1djMtdtozoTyQDOKbgoN0neCF2Cqwn6WCiYvsUM2ALRI"
+sheet = client.open_by_key(SPREADSHEET_ID).sheet1
 
 # =========================
 # UI IDENTITAS
