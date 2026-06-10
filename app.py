@@ -23,7 +23,7 @@ def init_gsheets():
 
     # IMPORTANT: ensure filename matches actual uploaded file
     creds = Credentials.from_service_account_file(
-        "cbt-streanmlit-9a9fa5a7d941.json",
+        "cbt-streamlit-9a9fa5a7d941.json",
         scopes=scope
     )
 
