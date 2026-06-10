@@ -1,5 +1,4 @@
 import streamlit as st
-import pandas as pd
 import gspread
 import os
 from datetime import datetime
@@ -16,14 +15,15 @@ def init_gsheets():
         "https://www.googleapis.com/auth/drive"
     ]
 
+    # pastikan file ini ada di repo / Streamlit Cloud
     creds = Credentials.from_service_account_file(
         "credentials.json",
         scopes=scope
     )
 
-    # DEBUG (taruh DI DALAM function, bukan di luar)
+    # DEBUG aman (tanpa attribute yang berisiko error)
     st.write("SERVICE ACCOUNT EMAIL:", creds.service_account_email)
-    st.write("TOKEN URI:", creds.token_uri)
+    st.write("PROJECT ID:", getattr(creds, "project_id", "N/A"))
     st.write("Credentials file exists:", os.path.exists("credentials.json"))
 
     client = gspread.authorize(creds)
@@ -60,7 +60,7 @@ if "started" not in st.session_state:
 
 if st.button("Start Exam"):
     if not name or not nim:
-        st.warning("Please enter Name and NIM before starting.")
+        st.warning("Please fill Name and NIM first.")
     else:
         st.session_state.started = True
 
@@ -121,7 +121,7 @@ if st.session_state.started:
     if st.button("Submit"):
 
         if not name or not nim:
-            st.error("Identity incomplete. Please fill Name and NIM.")
+            st.error("Incomplete identity")
             st.stop()
 
         score = 0
@@ -137,6 +137,10 @@ if st.session_state.started:
 
         st.success(f"Final Score = {score}")
 
+        # =========================
+        # SAVE TO GOOGLE SHEETS
+        # =========================
+
         try:
             sheet.append_row([
                 str(datetime.now()),
@@ -145,7 +149,7 @@ if st.session_state.started:
                 class_name,
                 score
             ])
-            st.info("Result successfully recorded in Google Sheets.")
+            st.info("Saved successfully to Google Sheets.")
         except Exception as e:
-            st.error("Failed to write to Google Sheets.")
+            st.error("Failed to save to Google Sheets")
             st.exception(e)
