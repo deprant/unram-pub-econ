@@ -20,7 +20,7 @@ creds = Credentials.from_service_account_file(
 
 client = gspread.authorize(creds)
 
-sheet = client.open("CBT Public Economics Results").sheet1
+sheet = client.open("1djMtdtozoTyQDOKbgoN0neCF2Cqwn6WCiYvsUM2ALRI").sheet1
 
 # =========================
 # UI IDENTITAS
