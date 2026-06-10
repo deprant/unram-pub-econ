@@ -2,8 +2,6 @@ import streamlit as st
 import pandas as pd
 import gspread
 from datetime import datetime
-import os
-st.write(os.listdir())
 from google.oauth2.service_account import Credentials
 
 # =========================
