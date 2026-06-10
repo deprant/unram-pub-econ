@@ -8,7 +8,7 @@ from google.oauth2.service_account import Credentials
 # =========================
 # DEBUG FILE CHECK (optional)
 # =========================
-st.write("Credentials file exists:", os.path.exists("cbt-streanmlit-9a9fa5a7d941.json"))
+st.write("Credentials file exists:", os.path.exists("credentials.json"))
 
 # =========================
 # GOOGLE SHEETS SETUP
@@ -23,7 +23,7 @@ def init_gsheets():
 
     # IMPORTANT: ensure filename matches actual uploaded file
     creds = Credentials.from_service_account_file(
-        "cbt-streamlit-9a9fa5a7d941.json",
+        "credentials.json",
         scopes=scope
     )
 
