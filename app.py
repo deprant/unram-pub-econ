@@ -2,12 +2,16 @@ import streamlit as st
 import pandas as pd
 import gspread
 import os
-print(os.path.exists("cbt-streanmlit-9a9fa5a7d941.json"))
 from datetime import datetime
 from google.oauth2.service_account import Credentials
 
 # =========================
-# GOOGLE SHEETS SETUP (OPTIMIZED)
+# DEBUG FILE CHECK (optional)
+# =========================
+st.write("Credentials file exists:", os.path.exists("cbt-streanmlit-9a9fa5a7d941.json"))
+
+# =========================
+# GOOGLE SHEETS SETUP
 # =========================
 
 @st.cache_resource
@@ -17,22 +21,26 @@ def init_gsheets():
         "https://www.googleapis.com/auth/drive"
     ]
 
+    # IMPORTANT: ensure filename matches actual uploaded file
     creds = Credentials.from_service_account_file(
-        "credentials.json",
+        "cbt-streanmlit-9a9fa5a7d941.json",
         scopes=scope
     )
 
     client = gspread.authorize(creds)
 
     spreadsheet_id = "1djMtdtozoTyQDOKbgoN0neCF2Cqwn6WCiYvsUM2ALRI"
+
+    # FIX: use variable, not string literal
     sheet = client.open_by_key(spreadsheet_id).sheet1
 
     return sheet
 
+
 sheet = init_gsheets()
 
 # =========================
-# UI IDENTITAS
+# UI
 # =========================
 
 st.title("Public Economics CBT")
@@ -46,7 +54,7 @@ class_name = st.selectbox(
 )
 
 # =========================
-# STATE START EXAM
+# SESSION STATE
 # =========================
 
 if "started" not in st.session_state:
@@ -114,10 +122,12 @@ if st.session_state.started:
 
     if st.button("Submit"):
 
+        # VALIDATION
         if not name or not nim:
-            st.error("Identity incomplete.")
+            st.error("Identity incomplete. Please fill Name and NIM.")
             st.stop()
 
+        # SCORING
         score = 0
 
         if q1 == "Non-rival and non-excludable":
@@ -132,7 +142,7 @@ if st.session_state.started:
         st.success(f"Final Score = {score}")
 
         # =========================
-        # SAVE TO GOOGLE SHEETS (SAFE WRITE)
+        # SAVE TO GOOGLE SHEETS
         # =========================
 
         try:
@@ -143,7 +153,7 @@ if st.session_state.started:
                 class_name,
                 score
             ])
-            st.info("Result successfully recorded.")
+            st.info("Result successfully recorded in Google Sheets.")
         except Exception as e:
             st.error("Failed to write to Google Sheets.")
             st.exception(e)
