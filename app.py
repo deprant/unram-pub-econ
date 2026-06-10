@@ -25,7 +25,7 @@ def init_gsheets():
     client = gspread.authorize(creds)
 
     spreadsheet_id = "1djMtdtozoTyQDOKbgoN0neCF2Cqwn6WCiYvsUM2ALRI"
-    sheet = client.open_by_key(SPREADSHEET_ID).sheet1
+    sheet = client.open_by_key(spreadsheet_id).sheet1
 
     return sheet
 
